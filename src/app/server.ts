@@ -1,6 +1,7 @@
 import { Server } from "http";
 import mongoose from "mongoose"
 import app from "./app.js";
+import { envVars } from "./config/env.js";
 
 let server: Server;
 
@@ -9,12 +10,13 @@ const startServer = async () => {
     const dns = await import('node:dns');
     dns.setServers(['8.8.8.8', '1.1.1.1']);
     try {
-        await mongoose.connect('mongodb+srv://tourDB:wQ7bhBYlS0G6iiV0@cluster0.kpht8.mongodb.net/?appName=Cluster0')
+        console.log(envVars.NODE_ENV)
+        await mongoose.connect(envVars.DB_URL)
 
         console.log("Connected to database!!");
 
-        server = app.listen(5000, () => {
-            console.log("server is runnig at port 5000")
+        server = app.listen(envVars.PORT, () => {
+            console.log(`server is runnig at port ${envVars.PORT}`)
         })
     } catch (error) {
         console.log(error)
