@@ -1,6 +1,8 @@
 import cors from "cors"
 import express, { type Request, type Response } from "express"
 import { router } from "./routes/index.js";
+import { globalErrorHandler } from "./middlewares/globalErrorHandler.js";
+
 
 const app = express();
 
@@ -14,5 +16,7 @@ app.get("/", (req: Request, res: Response) => {
         message: "welcome tour-management-system backend"
     })
 })
+
+app.use(globalErrorHandler)
 
 export default app;
