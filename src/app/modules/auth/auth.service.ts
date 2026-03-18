@@ -3,7 +3,7 @@ import type { IUser } from "../user/user.interface.js"
 import { User } from "../user/user.model.js";
 import httpStatus from "http-status-codes"
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken"
+// import jwt from "jsonwebtoken"
 import { generateToken } from "../../utils/jwt.js";
 import { envVars } from "../../config/env.js";
 
