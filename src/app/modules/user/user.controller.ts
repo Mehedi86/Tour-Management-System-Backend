@@ -3,6 +3,10 @@ import httpStatus from "http-status-codes"
 import { userServices } from "./user.service.js";
 import catchAsync from "../../utils/catchAsync.js";
 import { sendResponse } from "../../utils/sendResponse.js";
+import { type JwtPayload } from "jsonwebtoken"
+import { verifyToken } from "../../utils/jwt.js";
+import { envVars } from "../../config/env.js";
+import AppError from "../../errorHelpers/AppError.js";
 
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -13,6 +17,27 @@ const createUser = catchAsync(async (req: Request, res: Response, next: NextFunc
         success: true,
         statusCode: httpStatus.OK,
         message: "User created successfully!!",
+        data: user
+    })
+})
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.params.id;
+    const token = req.headers.authorization;
+    const verifiedToken = verifyToken(token as string, envVars.JWT_ACCESS_SECRET) as JwtPayload;
+    const payload = req.body;
+
+    if (!userId || typeof userId !== "string") {
+        throw new AppError(httpStatus.UNAUTHORIZED, "No userId provided", "");
+    }
+
+    const user = await userServices.updateUser(userId, payload, verifiedToken)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "User updated successfully!!",
         data: user
     })
 })
@@ -32,5 +57,6 @@ const getAllUsers = catchAsync(async (req: Request, res: Response, next: NextFun
 
 export const userControllers = {
     createUser,
+    updateUser,
     getAllUsers
 }
