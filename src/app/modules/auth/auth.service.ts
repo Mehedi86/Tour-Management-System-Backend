@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import AppError from "../../errorHelpers/AppError.js";
 import { type IUser } from "../user/user.interface.js";
 import { User } from "../user/user.model.js";
 import httpStatus from "http-status-codes";
 import bcrypt from "bcryptjs";
 import { createNewAccessTokenWithRefreshToken, createUserTokens } from "../../utils/userTokens.js";
+import type { JwtPayload } from "jsonwebtoken";
+import { envVars } from "../../config/env.js";
 
 
 const credentialsLogin = async (payload: Partial<IUser>) => {
@@ -48,7 +51,23 @@ const getNewAccessToken = async (refreshToken: string) => {
   };
 };
 
+const resetPassword = async (oldPassword: string, newPassword: string, decodedToken: JwtPayload) => {
+
+  const user = await User.findById(decodedToken.userId);
+
+  const isOldPasswordMatch = await bcrypt.compare(oldPassword, user!.password as string);
+
+  if (!isOldPasswordMatch) {
+    throw new AppError(httpStatus.UNAUTHORIZED, "Old password does not match!!", "");
+  }
+
+  user!.password = await bcrypt.hash(newPassword, Number(envVars.BCRYPT_SALT_ROUND));
+
+  user!.save();
+};
+
 export const AuthServices = {
   credentialsLogin,
   getNewAccessToken,
+  resetPassword
 };
