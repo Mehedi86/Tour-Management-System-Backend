@@ -23,7 +23,7 @@ export const createUserTokens = (user: Partial<IUser>) => {
   const refreshToken = generateToken(
     jwtPayload,
     envVars.JWT_REFRESH_SECRET,
-    envVars.JWT_REFRESH_EXPIRED,
+    envVars.JWT_REFRESH_EXPIRES,
   );
 
   return {

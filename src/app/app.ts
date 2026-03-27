@@ -1,13 +1,24 @@
 import cors from "cors"
 import express, { type Request, type Response } from "express"
+import "./config/passport.js";
 import { router } from "./routes/index.js";
 import { globalErrorHandler } from "./middlewares/globalErrorHandler.js";
 import notFound from "./middlewares/notFound.js";
 import cookieParser from "cookie-parser";
+import passport from "passport";
+import expressSession from "express-session"
 
 
 const app = express();
 
+app.use(expressSession({
+    secret: "your secret",
+    resave: false,
+    saveUninitialized: false
+}))
+
+app.use(passport.initialize())
+app.use(passport.session())
 app.use(cookieParser())
 app.use(express.json())
 app.use(cors())

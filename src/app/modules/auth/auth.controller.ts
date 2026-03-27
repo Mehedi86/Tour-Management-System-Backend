@@ -5,6 +5,9 @@ import httpStatus from "http-status-codes";
 import { AuthServices } from "./auth.service.js";
 import AppError from "../../errorHelpers/AppError.js";
 import { setAuthCookie } from "../../utils/setCookie.js";
+import { createUserTokens } from "../../utils/userTokens.js";
+import { envVars } from "../../config/env.js";
+import type { JwtPayload } from "jsonwebtoken";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const credentialsLogin = catchAsync(
@@ -83,7 +86,7 @@ const resetPassword = catchAsync(
     const newPassword = req.body.newPassword;
     const oldPassword = req.body.oldPassword;
 
-    await AuthServices.resetPassword(oldPassword, newPassword, decodedToken)
+    await AuthServices.resetPassword(oldPassword, newPassword, decodedToken as JwtPayload)
 
     sendResponse(res, {
       success: true,
@@ -94,9 +97,42 @@ const resetPassword = catchAsync(
   },
 );
 
+
+const googleCallbackController = catchAsync(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async (req: Request, res: Response, next: NextFunction) => {
+
+    let redirectTo = req.query.state ? req.query.state as string : "";
+    if (redirectTo.startsWith("/")) {
+      // eslint-disable-next-line no-useless-assignment
+      redirectTo = redirectTo.slice(1);
+    }
+    const user = req.user;
+
+    console.log("User", user)
+
+    if (!user) {
+      throw new AppError(httpStatus.NOT_FOUND, "User not found!!", '')
+    }
+
+    const tokenInfo = createUserTokens(user);
+
+    setAuthCookie(res, tokenInfo)
+
+    // sendResponse(res, {
+    //   success: true,
+    //   statusCode: httpStatus.OK,
+    //   message: "Password changed successfully!!",
+    //   data: null
+    // });
+    res.redirect(`${envVars.FRONTEND_URL}/${redirectTo}`)
+  }
+);
+
 export const AuthControllers = {
   credentialsLogin,
   getNewAccessToken,
   logout,
-  resetPassword
+  resetPassword,
+  googleCallbackController
 };
