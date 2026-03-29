@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { NextFunction, Request, Response } from "express";
 import catchAsync from "../../utils/catchAsync.js";
 import { sendResponse } from "../../utils/sendResponse.js";
@@ -8,21 +10,44 @@ import { setAuthCookie } from "../../utils/setCookie.js";
 import { createUserTokens } from "../../utils/userTokens.js";
 import { envVars } from "../../config/env.js";
 import type { JwtPayload } from "jsonwebtoken";
+import passport from "passport";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const credentialsLogin = catchAsync(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   async (req: Request, res: Response, next: NextFunction) => {
-    const loginInfo = await AuthServices.credentialsLogin(req.body);
 
-    setAuthCookie(res, loginInfo);
+    // const loginInfo = await AuthServices.credentialsLogin(req.body);
+    passport.authenticate("local", async (err: any, user: any, info: any) => {
 
-    sendResponse(res, {
-      success: true,
-      statusCode: httpStatus.OK,
-      message: "User logged in successfully!!",
-      data: loginInfo,
-    });
+      if (err) {
+        // console.log(err, "from err")
+        return next(new AppError(401, err, ""));
+      }
+
+      if (!user) {
+        // console.log(err, "from !user")
+        return next(new AppError(401, info.message, ""));
+      }
+
+      const userTokens = createUserTokens(user);
+
+      const { password: pass, ...rest } = user.toObject();
+
+      setAuthCookie(res, userTokens);
+
+      sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "User logged in successfully!!",
+        data: {
+          accessToken: userTokens.accessToken,
+          refressToken: userTokens.refreshToken,
+          user: rest
+        }
+      });
+    })(req, res, next);
+
+
   },
 );
 
