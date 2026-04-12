@@ -37,9 +37,9 @@ const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken:
 
     const isUserExist = await User.findById(userId);
 
-    if (!isUserExist) {
-        throw new AppError(httpStatus.NOT_FOUND, "User not found", "");
-    }
+    // if (!isUserExist) {
+    //     throw new AppError(httpStatus.NOT_FOUND, "User not found", "");
+    // }
     /**
         * email - can not update
         * name, phone, password address
