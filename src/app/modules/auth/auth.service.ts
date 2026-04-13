@@ -1,91 +1,73 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import AppError from "../../errorHelpers/AppError.js";
-import { isActive, type IUser } from "../user/user.interface.js";
+// import { type IUser } from "../user/user.interface.js";
 import { User } from "../user/user.model.js";
 import httpStatus from "http-status-codes";
 import bcrypt from "bcryptjs";
-import { createUserTokens } from "../../utils/userTokens.js";
-import { generateToken, verifyToken } from "../../utils/jwt.js";
-import { envVars } from "../../config/env.js";
+import { createNewAccessTokenWithRefreshToken } from "../../utils/userTokens.js";
 import type { JwtPayload } from "jsonwebtoken";
+import { envVars } from "../../config/env.js";
 
-const credentialsLogin = async (payload: Partial<IUser>) => {
-  const { email, password } = payload;
 
-  if (!email) {
-    throw new AppError(httpStatus.BAD_REQUEST, "Email is required", "");
-  }
-  const isUserExist = await User.findOne({ email });
+// const credentialsLogin = async (payload: Partial<IUser>) => {
+//   const { email, password } = payload;
 
-  if (!isUserExist) {
-    throw new AppError(httpStatus.BAD_REQUEST, "User does not exists!!", "");
-  }
+//   if (!email) {
+//     throw new AppError(httpStatus.BAD_REQUEST, "Email is required", "");
+//   }
 
-  const isPasswordMatched = await bcrypt.compare(
-    password as string,
-    isUserExist.password as string,
-  );
+//   const isUserExist = await User.findOne({ email });
 
-  if (!isPasswordMatched) {
-    throw new AppError(httpStatus.BAD_REQUEST, "Incorrect password!!", "");
-  }
+//   if (!isUserExist) {
+//     throw new AppError(httpStatus.BAD_REQUEST, "User does not exists!!", "");
+//   }
 
-  const userTokens = createUserTokens(isUserExist);
+//   const isPasswordMatched = await bcrypt.compare(
+//     password as string,
+//     isUserExist.password as string,
+//   );
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { password: pass, ...rest } = isUserExist.toObject();
+//   if (!isPasswordMatched) {
+//     throw new AppError(httpStatus.BAD_REQUEST, "Incorrect password!!", "");
+//   }
+
+//   const userTokens = createUserTokens(isUserExist);
+
+//   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+//   const { password: pass, ...rest } = isUserExist.toObject();
+
+//   return {
+//     accessToken: userTokens.accessToken,
+//     refreshToken: userTokens.refreshToken,
+//     user: rest,
+//   };
+// };
+
+const getNewAccessToken = async (refreshToken: string) => {
+
+  const newAccessToken = await createNewAccessTokenWithRefreshToken(refreshToken);
 
   return {
-    accessToken: userTokens.accessToken,
-    refreshToken: userTokens.refreshToken,
-    user: rest,
+    accessToken: newAccessToken
   };
 };
 
-const getNewAccessToken = async (refreshToken: string) => {
-  const verifiedRefreshToken = verifyToken(
-    refreshToken,
-    envVars.JWT_REFRESH_SECRET,
-  ) as JwtPayload;
+const resetPassword = async (oldPassword: string, newPassword: string, decodedToken: JwtPayload) => {
 
-  const isUserExist = await User.findOne({ email: verifiedRefreshToken.email });
+  const user = await User.findById(decodedToken.userId);
 
-  if (!isUserExist) {
-    throw new AppError(httpStatus.BAD_REQUEST, "User does not exists!!", "");
+  const isOldPasswordMatch = await bcrypt.compare(oldPassword, user!.password as string);
+
+  if (!isOldPasswordMatch) {
+    throw new AppError(httpStatus.UNAUTHORIZED, "Old password does not match!!", "");
   }
 
-  if (
-    isUserExist.isActive === isActive.BLOCKED ||
-    isUserExist.isActive === isActive.INACTIVE
-  ) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      `User is ${isUserExist.isActive}`,
-      "",
-    );
-  }
+  user!.password = await bcrypt.hash(newPassword, Number(envVars.BCRYPT_SALT_ROUND));
 
-  if (isUserExist.isDeleted) {
-    throw new AppError(httpStatus.BAD_REQUEST, "User is deleted!!", "");
-  }
-
-  const jwtPayload = {
-    userId: isUserExist._id,
-    email: isUserExist.email,
-    role: isUserExist.role,
-  };
-
-  const accessToken = generateToken(
-    jwtPayload,
-    envVars.JWT_REFRESH_SECRET,
-    envVars.JWT_REFRESH_EXPIRED,
-  );
-
-  return {
-    accessToken,
-  };
+  user!.save();
 };
 
 export const AuthServices = {
-  credentialsLogin,
   getNewAccessToken,
+  resetPassword
 };
