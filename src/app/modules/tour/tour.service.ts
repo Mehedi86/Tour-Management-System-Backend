@@ -1,3 +1,4 @@
+import { excludeField } from "../../constants.js";
 import { QueryBuilder } from "../../utils/QueryBuilder.js";
 import { tourSearchableFields } from "./tour.constant.js";
 import type { ITour, ITourType } from "./tour.interface.js";
@@ -14,27 +15,56 @@ const createTour = async (payload: ITour) => {
     return tour;
 };
 
+// const getAllTours = async (query: Record<string, string>) => {
+
+//     const queryBuilder = new QueryBuilder(Tour.find(), query)
+
+//     const tours = queryBuilder
+//         .search(tourSearchableFields)
+//         .filter()
+//         .sort()
+//         .fields()
+//         .paginate()
+
+//     const [data, meta] = await Promise.all([
+//         tours.build(),
+//         queryBuilder.getMeta()
+//     ])
+
+
+//     return {
+//         data,
+//         meta
+//     }
+// };
+
 const getAllTours = async (query: Record<string, string>) => {
 
+    console.log(query)
+    const filter = query;
+    const searchTerm = query.searchTerm || "";
+    const sort = query.sort || "-createdAt";
 
-    const queryBuilder = new QueryBuilder(Tour.find(), query)
+    // filed filtering
+    const fields = query.fields?.split(",").join(" ") || "";
 
-    const tours = queryBuilder
-        .search(tourSearchableFields)
-        .filter()
-        .sort()
-        .fields()
-        .paginate()
+    for (const field of excludeField) {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        delete filter[field]
+    }
 
-    const [data, meta] = await Promise.all([
-        tours.build(),
-        queryBuilder.getMeta()
-    ])
+    const searchQuery = {
+        $or: tourSearchableFields.map(field => ({ [field]: { $regex: searchTerm, $options: "i" } }))
+    }
+    const tours = await Tour.find(searchQuery).find(filter).sort(sort).select(fields)
 
+    const totalTours = await Tour.countDocuments();
 
     return {
-        data,
-        meta
+        data: tours,
+        meta: {
+            total: totalTours
+        }
     }
 };
 
@@ -76,7 +106,7 @@ const updateTourType = async (id: string, payload: ITourType) => {
     if (!existingTourType) {
         throw new Error("Tour type not found.");
     }
-    
+
     const updatedTourType = await TourType.findByIdAndUpdate(id, payload, { new: true });
     return updatedTourType;
 };
