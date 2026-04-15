@@ -1,5 +1,5 @@
 import { excludeField } from "../../constants.js";
-import { QueryBuilder } from "../../utils/QueryBuilder.js";
+// import { QueryBuilder } from "../../utils/QueryBuilder.js";
 import { tourSearchableFields } from "./tour.constant.js";
 import type { ITour, ITourType } from "./tour.interface.js";
 import { Tour, TourType } from "./tour.model.js";
@@ -44,6 +44,9 @@ const getAllTours = async (query: Record<string, string>) => {
     const filter = query;
     const searchTerm = query.searchTerm || "";
     const sort = query.sort || "-createdAt";
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const skip = (page - 1) * limit
 
     // filed filtering
     const fields = query.fields?.split(",").join(" ") || "";
@@ -56,7 +59,7 @@ const getAllTours = async (query: Record<string, string>) => {
     const searchQuery = {
         $or: tourSearchableFields.map(field => ({ [field]: { $regex: searchTerm, $options: "i" } }))
     }
-    const tours = await Tour.find(searchQuery).find(filter).sort(sort).select(fields)
+    const tours = await Tour.find(searchQuery).find(filter).sort(sort).select(fields).skip(skip).limit(limit)
 
     const totalTours = await Tour.countDocuments();
 
