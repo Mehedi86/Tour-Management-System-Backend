@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { userControllers } from "./user.controller.js";
+import { UserControllers } from "./user.controller.js";
 import { validateRequest } from "../../middlewares/validateRequest.js";
 import { createUserZodSchema, updateUserZodSchema } from "./user.validation.js";
 import { checkAuth } from "../../middlewares/checkAuth.js";
@@ -11,8 +11,11 @@ const router = Router();
 
 
 
-router.post("/register", validateRequest(createUserZodSchema), userControllers.createUser);
-router.get("/all-users", checkAuth(Role.ADMIN, Role.SUPER_ADMIN), userControllers.getAllUsers);
-router.patch("/:id", validateRequest(updateUserZodSchema), checkAuth(...Object.values(Role)), userControllers.updateUser)
+router.post("/register", validateRequest(createUserZodSchema), UserControllers.createUser);
+
+router.get("/all-users", checkAuth(Role.ADMIN, Role.SUPER_ADMIN), UserControllers.getAllUsers);
+
+router.get("/:id", checkAuth(...Object.values(Role)), UserControllers.getSingleUser)
+router.patch("/:id", validateRequest(updateUserZodSchema), checkAuth(...Object.values(Role)), UserControllers.updateUser)
 
 export const userRoutes = router;

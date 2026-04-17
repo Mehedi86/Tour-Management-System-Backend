@@ -37,6 +37,12 @@ const getAllTours = async (query: Record<string, string>) => {
     }
 };
 
+const getSingleTour = async (slug: string) => {
+    const tour = await Tour.findOne({ slug });
+    return {
+        data: tour,
+    }
+};
 
 // const getAllTours = async (query: Record<string, string>) => {
 
@@ -132,6 +138,14 @@ const getAllTourTypes = async (query: Record<string, string>) => {
 
 };
 
+
+const getSingleTourType = async (id: string) => {
+    const tourType = await TourType.findById(id);
+    return {
+        data: tourType
+    };
+};
+
 const updateTourType = async (id: string, payload: ITourType) => {
     const existingTourType = await TourType.findById(id);
     if (!existingTourType) {
@@ -159,7 +173,9 @@ export const TourService = {
     deleteTourType,
     updateTourType,
     getAllTourTypes,
+    getSingleTourType,
     getAllTours,
+    getSingleTour,
     updateTour,
     deleteTour,
 };
