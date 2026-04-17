@@ -102,42 +102,6 @@ const getAllUsers = async (query: Record<string, string>) => {
     }
 }
 
-// const getAllUsers = async () => {
-//     const users = await User.find({});
-//     const totalUsers = await User.countDocuments();
-
-//     return {
-//         data: users,
-//         meta: {
-//             total: totalUsers
-//         }
-//     }
-// }
-
-
-// const getAllTours = async (query: Record<string, string>) => {
-
-//     const queryBuilder = new QueryBuilder(Tour.find(), query)
-
-//     const tours = queryBuilder
-//         .search(tourSearchableFields)
-//         .filter()
-//         .sort()
-//         .fields()
-//         .paginate()
-
-//     const [data, meta] = await Promise.all([
-//         tours.build(),
-//         queryBuilder.getMeta()
-//     ])
-
-
-//     return {
-//         data,
-//         meta
-//     }
-// };
-
 export const userServices = {
     createUser,
     getAllUsers,
