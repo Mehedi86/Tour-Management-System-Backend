@@ -4,6 +4,7 @@ import { userServices } from "./user.service.js";
 import catchAsync from "../../utils/catchAsync.js";
 import { sendResponse } from "../../utils/sendResponse.js";
 import AppError from "../../errorHelpers/AppError.js";
+import type { JwtPayload } from "jsonwebtoken";
 
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -28,7 +29,7 @@ const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunc
         throw new AppError(httpStatus.UNAUTHORIZED, "No userId provided", "");
     }
 
-    const user = await userServices.updateUser(userId, payload, verifiedToken)
+    const user = await userServices.updateUser(userId, payload, verifiedToken as JwtPayload)
 
     sendResponse(res, {
         success: true,
@@ -40,7 +41,9 @@ const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunc
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getAllUsers = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const result = await userServices.getAllUsers();
+
+    const query = req.query;
+    const result = await userServices.getAllUsers(query as Record<string, string>);
 
     sendResponse(res, {
         success: true,
