@@ -10,9 +10,11 @@ export interface ITour {
     description?: string;
     images: string[];
     location?: string;
-    costForm?:number;
+    costForm?: number;
     startDate?: Date;
     endDate?: Date;
+    departureLocation?: string;
+    arrivalLocation?: string;
     inclueded?: string[];
     excluded?: string[];
     amenities?: string[];
