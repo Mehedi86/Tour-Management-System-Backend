@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import AppError from "../../errorHelpers/AppError.js";
 import { User } from "../user/user.model.js"
 import { BOOKING_STATUS, type IBooking } from "./booking.interface.js"
@@ -6,15 +7,17 @@ import { Booking } from "./booking.model.js";
 import { Payment } from "../payment/payment.model.js";
 import { PAYMENT_STATUS } from "../payment/payment.interface.js";
 import { Tour } from "../tour/tour.model.js";
+import { SSLService } from "../sslCommerz/sslCommerz.service.js";
+import type { ISSLCommerz } from "../sslCommerz/sslCommerz.interface.js";
 
-const getTransectionId = () => {
+const getTransactionId = () => {
     return `tran_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
 };
 
 
 const createBooking = async (payload: Partial<IBooking>, userId: string) => {
 
-    const transectionId = getTransectionId();
+    const transactionId = getTransactionId();
 
     console.log(payload)
 
@@ -52,7 +55,7 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
         const payment = await Payment.create([{
             booking: bookingDoc._id,
             status: PAYMENT_STATUS.UNPAID,
-            transactionId: transectionId,
+            transactionId: transactionId,
             amount
         }], { session });
 
@@ -71,10 +74,30 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
             .populate("tour", "title costFrom")
             .populate("payment")
 
+        const userAddress = (updatedBooking?.user as any).address
+        const userEmail = (updatedBooking?.user as any).email
+        const userPhoneNumber = (updatedBooking?.user as any).phone
+        const userName = (updatedBooking?.user as any).name
+
+        const sslPayload: ISSLCommerz = {
+            address: userAddress,
+            email: userEmail,
+            phoneNumber: userPhoneNumber,
+            name: userName,
+            amount: amount,
+            transactionId: transactionId
+        }
+
+        const sslPayment = await SSLService.sslPaymentInit(sslPayload);
+        console.log(sslPayment)
+
         await session.commitTransaction();
         session.endSession();
 
-        return updatedBooking;
+        return {
+            paymentUrl: sslPayment.GatewayPageURL,
+            booking: updatedBooking
+        }
 
     }
     catch (error) {
