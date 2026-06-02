@@ -5,6 +5,8 @@ import httpStatus from "http-status-codes"
 import bcrypt from "bcryptjs";
 import { envVars } from "../../config/env.js";
 import type { JwtPayload } from "jsonwebtoken";
+import { QueryBuilder } from "../../utils/QueryBuilder.js";
+import { userSearchableFields } from "./user.constant.js";
 
 const createUser = async (payload: Partial<IUser>) => {
     const { email, password, ...rest } = payload;
@@ -37,9 +39,10 @@ const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken:
 
     const isUserExist = await User.findById(userId);
 
-    // if (!isUserExist) {
-    //     throw new AppError(httpStatus.NOT_FOUND, "User not found", "");
-    // }
+    if (!isUserExist) {
+        throw new AppError(httpStatus.NOT_FOUND, "User not found", "");
+    }
+
     /**
         * email - can not update
         * name, phone, password address
@@ -77,20 +80,38 @@ const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken:
     return newUpdatedUser;
 }
 
-const getAllUsers = async () => {
-    const users = await User.find({});
-    const totalUsers = await User.countDocuments();
+
+const getAllUsers = async (query: Record<string, string>) => {
+    const queryBuilder = new QueryBuilder(User.find(), query);
+
+    const users = queryBuilder
+        .search(userSearchableFields)
+        .filter()
+        .sort()
+        .fields()
+        .paginate()
+
+    const [data, meta] = await Promise.all([
+        users.build(),
+        queryBuilder.getMeta()
+    ])
 
     return {
-        data: users,
-        meta: {
-            total: totalUsers
-        }
+        data,
+        meta
     }
 }
 
-export const userServices = {
+const getSingleUser = async (id: string) => {
+    const user = await User.findById(id);
+    return {
+        data: user
+    }
+};
+
+export const UserServices = {
     createUser,
     getAllUsers,
+    getSingleUser,
     updateUser
 }

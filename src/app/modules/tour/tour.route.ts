@@ -8,7 +8,13 @@ import { createTourTypeZodSchema, createTourZodSchema, updateTourZodSchema } fro
 const router = express.Router();
 
 /* ------------------ TOUR TYPE ROUTES -------------------- */
+
 router.get("/tour-types", TourController.getAllTourTypes);
+
+router.get(
+    "/tour-types/:id",
+    TourController.getSingleTourType
+);
 
 router.post(
     "/create-tour-type",
@@ -29,6 +35,11 @@ router.delete("/tour-types/:id", checkAuth(Role.ADMIN, Role.SUPER_ADMIN), TourCo
 /* --------------------- TOUR ROUTES ---------------------- */
 
 router.get("/", TourController.getAllTours);
+
+router.get(
+    "/:slug",
+    TourController.getSingleTour
+);
 
 router.post(
     "/create",

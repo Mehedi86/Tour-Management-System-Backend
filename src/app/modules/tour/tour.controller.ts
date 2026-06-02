@@ -26,6 +26,19 @@ const getAllTours = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const getSingleTour = catchAsync(async (req: Request, res: Response) => {
+
+    const slug = req.params.slug as string;
+    const result = await TourService.getSingleTour(slug)
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Tour retrieved successfully',
+        data: result,
+    });
+})
+
 const updateTour = catchAsync(async (req: Request, res: Response) => {
     const id = req.params.id as string;
     const result = await TourService.updateTour(id, req.body);
@@ -47,12 +60,29 @@ const deleteTour = catchAsync(async (req: Request, res: Response) => {
         data: result,
     });
 });
+
 const getAllTourTypes = catchAsync(async (req: Request, res: Response) => {
-    const result = await TourService.getAllTourTypes();
+
+    const query = req.query;
+    const result = await TourService.getAllTourTypes(query as Record<string, string>);
+
     sendResponse(res, {
         statusCode: 200,
         success: true,
         message: 'Tour types retrieved successfully',
+        data: result,
+    });
+});
+
+const getSingleTourType = catchAsync(async (req: Request, res: Response) => {
+
+    const id = req.params.id as string;
+    const result = await TourService.getSingleTourType(id);
+    
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Tour type retrieved successfully',
         data: result,
     });
 });
@@ -98,9 +128,11 @@ export const TourController = {
     createTour,
     createTourType,
     getAllTourTypes,
+    getSingleTourType,
     deleteTourType,
     updateTourType,
     getAllTours,
+    getSingleTour,
     updateTour,
     deleteTour,
 };
