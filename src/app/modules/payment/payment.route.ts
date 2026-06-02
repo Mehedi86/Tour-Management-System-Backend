@@ -1,10 +1,12 @@
 import express from "express";
-import { paymentController } from "./payment.controller.js";
+import { PaymentController } from "./payment.controller.js";
+
 
 const router = express.Router();
 
-router.post("/success", paymentController.successPayment);
-router.post("/fail", paymentController.failPayment);
-router.post("/cancel", paymentController.cancelPayment);
+router.post("/init-payment/:bookingId", PaymentController.initPayment); 
+router.post("/success", PaymentController.successPayment);
+router.post("/fail", PaymentController.failPayment);
+router.post("/cancel", PaymentController.cancelPayment);
 
 export const paymentRoutes = router;
