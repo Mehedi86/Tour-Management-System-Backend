@@ -13,23 +13,28 @@ interface EnvConfig {
   JWT_REFRESH_EXPIRES: string;
   SUPER_ADMIN_EMAIL: string;
   SUPER_ADMIN_PASSWORD: string;
-  GOOGLE_CLIENT_ID: string,
-  GOOGLE_CLIENT_SECRET: string,
-  GOOGLE_CALLBACK_URL: string,
-  EXPRESS_SESSION_SECRET: string,
-  FRONTEND_URL: string,
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
+  GOOGLE_CALLBACK_URL: string;
+  EXPRESS_SESSION_SECRET: string;
+  FRONTEND_URL: string;
   SSL: {
-    STORE_ID: string,
-    STORE_PASS: string,
-    SSL_PAYMENT_API: string,
-    SSL_VALIDATION_API: string
-    SSL_SUCCESS_FRONTEND_URL: string,
-    SSL_FAIL_FRONTEND_URL: string,
-    SSL_CANCEL_FRONTEND_URL: string,
-    SSL_SUCCESS_BACKEND_URL: string,
-    SSL_FAIL_BACKEND_URL: string,
-    SSL_CANCEL_BACKEND_URL: string,
-  }
+    STORE_ID: string;
+    STORE_PASS: string;
+    SSL_PAYMENT_API: string;
+    SSL_VALIDATION_API: string;
+    SSL_SUCCESS_FRONTEND_URL: string;
+    SSL_FAIL_FRONTEND_URL: string;
+    SSL_CANCEL_FRONTEND_URL: string;
+    SSL_SUCCESS_BACKEND_URL: string;
+    SSL_FAIL_BACKEND_URL: string;
+    SSL_CANCEL_BACKEND_URL: string;
+  };
+  CLOUDINARY: {
+    CLOUDINARY_CLOUD_NAME: string;
+    CLOUDINARY_API_KEY: string;
+    CLOUDINARY_API_SECRET: string;
+  };
 }
 
 const loadEnvVariables = (): EnvConfig => {
@@ -58,8 +63,10 @@ const loadEnvVariables = (): EnvConfig => {
     "SSL_CANCEL_FRONTEND_URL",
     "SSL_SUCCESS_BACKEND_URL",
     "SSL_FAIL_BACKEND_URL",
-    "SSL_CANCEL_BACKEND_URL"
-
+    "SSL_CANCEL_BACKEND_URL",
+    "CLOUDINARY_CLOUD_NAME",
+    "CLOUDINARY_API_KEY",
+    "CLOUDINARY_API_SECRET",
   ];
   requiredEnvVariables.forEach((key) => {
     if (!process.env[key]) {
@@ -94,7 +101,13 @@ const loadEnvVariables = (): EnvConfig => {
       SSL_SUCCESS_BACKEND_URL: process.env.SSL_SUCCESS_BACKEND_URL as string,
       SSL_FAIL_BACKEND_URL: process.env.SSL_FAIL_BACKEND_URL as string,
       SSL_CANCEL_BACKEND_URL: process.env.SSL_CANCEL_BACKEND_URL as string,
-    }
+    },
+    //cloudinary
+    CLOUDINARY: {
+      CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME as string,
+      CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY as string,
+      CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET as string,
+    },
   };
 };
 
