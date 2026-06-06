@@ -6,13 +6,12 @@ import AppError from "../../errorHelpers/AppError.js";
 import type { IDivision } from "./division.interface.js";
 
 const createDivision = catchAsync(async (req: Request, res: Response) => {
-  
   const payload: IDivision = {
-        ...req.body,
-        thumbnail: req.file?.path
-    }
-    const result = await DivisionService.createDivision(payload);
-  
+    ...req.body,
+    thumbnail: req.file?.path,
+  };
+  const result = await DivisionService.createDivision(payload);
+
   sendResponse(res, {
     statusCode: 201,
     success: true,
@@ -53,12 +52,17 @@ const getSingleDivision = catchAsync(async (req: Request, res: Response) => {
 
 const updateDivision = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id;
+  
+  const payload: IDivision = {
+    ...req.body,
+    thumbnail: req.file?.path,
+  };
 
   if (!id || typeof id !== "string") {
-    throw new Error("Invalid ID");
+    throw new Error("Invalid Id");
   }
 
-  const result = await DivisionService.updateDivision(id, req.body);
+  const result = await DivisionService.updateDivision(id, payload);
   sendResponse(res, {
     statusCode: 200,
     success: true,
